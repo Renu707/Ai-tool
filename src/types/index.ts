@@ -1,17 +1,17 @@
-
 export interface Tool {
   id: string;
   name: string;
   description: string;
-  logo: string;
   category: string;
+  categories?: string[];
+  logo?: string;
   tags: string[];
-  pricing: "Free" | "Freemium" | "Paid";
+  pricing: string;
   website: string;
+  useCases: string[];
   featured?: boolean;
   trending?: boolean;
   new?: boolean;
-  useCases: string[];
   rating?: number;
 }
 

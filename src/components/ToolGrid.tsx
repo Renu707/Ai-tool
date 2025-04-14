@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import ToolCard from "./ToolCard";
 import { Tool } from "@/types";
@@ -17,7 +16,11 @@ const ToolGrid = ({ tools, title, category, searchQuery }: ToolGridProps) => {
     let result = [...tools];
     
     if (category) {
-      result = result.filter(tool => tool.category === category);
+      result = result.filter(tool => 
+        // Check both single category and categories array
+        tool.category === category || 
+        tool.categories?.includes(category)
+      );
     }
     
     if (searchQuery && searchQuery.trim() !== "") {
