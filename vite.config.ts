@@ -21,6 +21,20 @@ export default defineConfig({
         '@radix-ui/react-toast',
         '@radix-ui/react-tooltip',
         '@radix-ui/react-select',
+        '@radix-ui/react-dialog',
+        '@radix-ui/react-portal',
+        '@radix-ui/react-primitive',
+        '@radix-ui/react-use-callback-ref',
+        '@radix-ui/react-use-controllable-state',
+        '@radix-ui/react-context',
+        '@radix-ui/react-compose-refs',
+        '@radix-ui/react-presence',
+        '@radix-ui/react-focus-guards',
+        '@radix-ui/react-focus-scope',
+        '@radix-ui/react-id',
+        '@radix-ui/react-use-layout-effect',
+        '@radix-ui/react-dismissable-layer',
+        '@radix-ui/react-remove-scroll',
         'next-themes'
       ],
       output: {
@@ -31,7 +45,10 @@ export default defineConfig({
             '@radix-ui/react-slot',
             '@radix-ui/react-toast',
             '@radix-ui/react-tooltip',
-            '@radix-ui/react-select'
+            '@radix-ui/react-select',
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-portal',
+            '@radix-ui/react-primitive'
           ],
           themes: ['next-themes']
         },
@@ -42,6 +59,20 @@ export default defineConfig({
           '@radix-ui/react-toast': 'RadixToast',
           '@radix-ui/react-tooltip': 'RadixTooltip',
           '@radix-ui/react-select': 'RadixSelect',
+          '@radix-ui/react-dialog': 'RadixDialog',
+          '@radix-ui/react-portal': 'RadixPortal',
+          '@radix-ui/react-primitive': 'RadixPrimitive',
+          '@radix-ui/react-use-callback-ref': 'RadixUseCallbackRef',
+          '@radix-ui/react-use-controllable-state': 'RadixUseControllableState',
+          '@radix-ui/react-context': 'RadixContext',
+          '@radix-ui/react-compose-refs': 'RadixComposeRefs',
+          '@radix-ui/react-presence': 'RadixPresence',
+          '@radix-ui/react-focus-guards': 'RadixFocusGuards',
+          '@radix-ui/react-focus-scope': 'RadixFocusScope',
+          '@radix-ui/react-id': 'RadixId',
+          '@radix-ui/react-use-layout-effect': 'RadixUseLayoutEffect',
+          '@radix-ui/react-dismissable-layer': 'RadixDismissableLayer',
+          '@radix-ui/react-remove-scroll': 'RadixRemoveScroll',
           'next-themes': 'NextThemes'
         }
       },
