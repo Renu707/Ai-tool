@@ -4,15 +4,16 @@ import Link from "next/link";
 import {
   Home,
   Search,
-  Layout as LayoutIcon,
-  Tool,
-  Compare,
+  LayoutIcon,
+  Wrench,
+  ArrowLeftRight,
   Play,
-  Flask,
+  Beaker,
   Upload,
   Users,
   Brain,
 } from "lucide-react";
+import { categories } from "@/data/categories";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 
@@ -20,17 +21,9 @@ interface LayoutProps {
   children: ReactNode;
 }
 
-const navItems = [
+const mainNavItems = [
   { href: "/", label: "Home", icon: Home },
   { href: "/discover", label: "Discover Tools", icon: Search },
-  { href: "/stacks", label: "Tool Stacks", icon: LayoutIcon },
-  { href: "/workflows", label: "Workflows", icon: Tool },
-  { href: "/compare", label: "Compare Tools", icon: Compare },
-  { href: "/demo", label: "Tool Demo", icon: Play },
-  { href: "/experimental", label: "Experimental", icon: Flask },
-  { href: "/submit", label: "Submit Tool", icon: Upload },
-  { href: "/collaborate", label: "Collaborate", icon: Users },
-  { href: "/smart", label: "Smart Features", icon: Brain },
 ];
 
 export default function Layout({ children }: LayoutProps) {
@@ -42,25 +35,53 @@ export default function Layout({ children }: LayoutProps) {
       <div className="flex-1 flex">
         {/* Sidebar */}
         <aside className="w-64 border-r bg-gray-50 hidden md:block">
-          <nav className="p-4 space-y-1">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = router.pathname === item.href;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
-                    isActive
-                      ? "bg-primary-50 text-primary-600"
-                      : "text-gray-700 hover:bg-gray-100"
-                  }`}
-                >
-                  <Icon className="w-5 h-5" />
-                  <span className="font-medium">{item.label}</span>
-                </Link>
-              );
-            })}
+          <nav className="p-4 space-y-6">
+            {/* Main Navigation */}
+            <div className="space-y-1">
+              {mainNavItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = router.pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
+                      isActive
+                        ? "bg-primary-50 text-primary-600"
+                        : "text-gray-700 hover:bg-gray-100"
+                    }`}
+                  >
+                    <Icon className="w-5 h-5" />
+                    <span className="font-medium">{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Categories */}
+            <div>
+              <h3 className="text-sm font-semibold text-gray-500 uppercase px-3 mb-2">
+                Categories
+              </h3>
+              <div className="space-y-1">
+                {categories.map((category) => {
+                  const isActive = router.query.id === category.id;
+                  return (
+                    <Link
+                      key={category.id}
+                      href={`/category/${category.id}`}
+                      className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
+                        isActive
+                          ? "bg-primary-50 text-primary-600"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}
+                    >
+                      <span className="font-medium">{category.name}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
           </nav>
         </aside>
 

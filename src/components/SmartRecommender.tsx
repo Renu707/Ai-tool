@@ -195,7 +195,12 @@ export default function SmartRecommender() {
                 </div>
 
                 <div className="flex items-center space-x-2">
-                  <Button className="flex-1">Try Now</Button>
+                  <Button 
+                    className="flex-1" 
+                    onClick={() => window.open(rec.tool.website, '_blank')}
+                  >
+                    Try Now
+                  </Button>
                   <Button variant="outline">
                     <BookMarked className="w-4 h-4" />
                   </Button>

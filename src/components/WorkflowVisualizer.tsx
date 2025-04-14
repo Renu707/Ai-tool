@@ -1,197 +1,318 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { Tool } from "@/types";
-import { ArrowRight, Zap, Clock, Star } from "lucide-react";
+import { ArrowRight, Plus, X, Check, Clock, Settings, Save } from "lucide-react";
 
-interface WorkflowNode {
+interface WorkflowStep {
+  id: string;
   tool: Tool;
-  inputs: string[];
-  outputs: string[];
+  description: string;
+  status: "pending" | "in-progress" | "completed";
   estimatedTime: string;
-  complexity: "Beginner" | "Intermediate" | "Advanced";
+  notes: string;
 }
 
-interface Workflow {
+interface CustomWorkflow {
+  id: string;
   name: string;
   description: string;
-  nodes: WorkflowNode[];
-  totalTime: string;
-  skillLevel: string;
-  automationPotential: number; // 0-100
+  steps: WorkflowStep[];
+  createdAt: string;
+  lastUpdated: string;
 }
 
-// Mock data - replace with actual workflow generation
-const sampleWorkflow: Workflow = {
-  name: "Content Creation Pipeline",
-  description: "End-to-end AI-powered content creation workflow",
-  nodes: [
-    {
-      tool: {
-        id: "1",
-        name: "IdeaGen AI",
-        description: "Generate content ideas",
-        category: "Ideation"
-      },
-      inputs: ["Topic", "Target audience"],
-      outputs: ["Content outline", "Keywords"],
-      estimatedTime: "5-10 mins",
-      complexity: "Beginner"
-    },
-    {
-      tool: {
-        id: "2",
-        name: "ContentForge",
-        description: "Generate detailed content",
-        category: "Creation"
-      },
-      inputs: ["Outline", "Style preferences"],
-      outputs: ["Draft content", "Citations"],
-      estimatedTime: "10-15 mins",
-      complexity: "Intermediate"
-    },
-    {
-      tool: {
-        id: "3",
-        name: "MediaMaster",
-        description: "Generate supporting media",
-        category: "Media"
-      },
-      inputs: ["Content context", "Style guide"],
-      outputs: ["Images", "Graphics"],
-      estimatedTime: "5-10 mins",
-      complexity: "Intermediate"
-    }
-  ],
-  totalTime: "20-35 mins",
-  skillLevel: "Intermediate",
-  automationPotential: 80
-};
-
 export default function WorkflowVisualizer() {
-  const [activeNode, setActiveNode] = useState<number | null>(null);
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [workflows, setWorkflows] = useState<CustomWorkflow[]>([]);
+  const [selectedWorkflow, setSelectedWorkflow] = useState<CustomWorkflow | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
+  const [newWorkflowName, setNewWorkflowName] = useState("");
+  const [newWorkflowDescription, setNewWorkflowDescription] = useState("");
 
-  const simulateWorkflow = () => {
-    setIsAnimating(true);
-    let currentNode = 0;
+  const createNewWorkflow = () => {
+    if (!newWorkflowName.trim()) return;
 
-    const animate = () => {
-      if (currentNode < sampleWorkflow.nodes.length) {
-        setActiveNode(currentNode);
-        currentNode++;
-        setTimeout(animate, 2000);
-      } else {
-        setIsAnimating(false);
-        setActiveNode(null);
-      }
+    const newWorkflow: CustomWorkflow = {
+      id: Date.now().toString(),
+      name: newWorkflowName,
+      description: newWorkflowDescription,
+      steps: [],
+      createdAt: new Date().toISOString(),
+      lastUpdated: new Date().toISOString()
     };
 
-    animate();
+    setWorkflows([...workflows, newWorkflow]);
+    setSelectedWorkflow(newWorkflow);
+    setIsCreating(false);
+    setNewWorkflowName("");
+    setNewWorkflowDescription("");
+  };
+
+  const addStep = (workflow: CustomWorkflow, tool: Tool) => {
+    const newStep: WorkflowStep = {
+      id: Date.now().toString(),
+      tool,
+      description: "",
+      status: "pending",
+      estimatedTime: "30 mins",
+      notes: ""
+    };
+
+    const updatedWorkflow = {
+      ...workflow,
+      steps: [...workflow.steps, newStep],
+      lastUpdated: new Date().toISOString()
+    };
+
+    setWorkflows(workflows.map(w => 
+      w.id === workflow.id ? updatedWorkflow : w
+    ));
+    setSelectedWorkflow(updatedWorkflow);
+  };
+
+  const updateStepStatus = (workflowId: string, stepId: string, status: WorkflowStep["status"]) => {
+    setWorkflows(workflows.map(workflow => {
+      if (workflow.id !== workflowId) return workflow;
+
+      return {
+        ...workflow,
+        steps: workflow.steps.map(step => 
+          step.id === stepId ? { ...step, status } : step
+        ),
+        lastUpdated: new Date().toISOString()
+      };
+    }));
+  };
+
+  const updateStepNotes = (workflowId: string, stepId: string, notes: string) => {
+    setWorkflows(workflows.map(workflow => {
+      if (workflow.id !== workflowId) return workflow;
+
+      return {
+        ...workflow,
+        steps: workflow.steps.map(step => 
+          step.id === stepId ? { ...step, notes } : step
+        ),
+        lastUpdated: new Date().toISOString()
+      };
+    }));
+  };
+
+  const deleteWorkflow = (workflowId: string) => {
+    setWorkflows(workflows.filter(w => w.id !== workflowId));
+    if (selectedWorkflow?.id === workflowId) {
+      setSelectedWorkflow(null);
+    }
   };
 
   return (
-    <div className="w-full space-y-6">
-      <div className="space-y-2">
-        <h2 className="text-2xl font-bold">Interactive Workflow</h2>
-        <p className="text-gray-600">
-          See how different AI tools work together in real-world scenarios
-        </p>
+    <div className="w-full space-y-8">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold">Interactive Workflows</h2>
+          <p className="text-gray-600">Create and track your custom AI tool workflows</p>
+        </div>
+        <Button onClick={() => setIsCreating(true)}>
+          <Plus className="w-4 h-4 mr-2" /> Create Workflow
+        </Button>
       </div>
 
-      <Card className="p-6">
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
+      {isCreating && (
+        <Card className="p-6 space-y-4">
+          <div className="space-y-4">
             <div>
-              <h3 className="text-xl font-semibold">{sampleWorkflow.name}</h3>
-              <p className="text-gray-600">{sampleWorkflow.description}</p>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Workflow Name
+              </label>
+              <input
+                type="text"
+                value={newWorkflowName}
+                onChange={(e) => setNewWorkflowName(e.target.value)}
+                className="w-full px-3 py-2 border rounded-md"
+                placeholder="e.g., Content Creation Pipeline"
+              />
             </div>
-            <Button
-              onClick={simulateWorkflow}
-              disabled={isAnimating}
-              className="flex items-center space-x-2"
-            >
-              <Zap className="w-4 h-4" />
-              <span>Simulate Workflow</span>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Description
+              </label>
+              <Textarea
+                value={newWorkflowDescription}
+                onChange={(e) => setNewWorkflowDescription(e.target.value)}
+                placeholder="Describe your workflow process..."
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setIsCreating(false)}>
+                Cancel
+              </Button>
+              <Button onClick={createNewWorkflow}>
+                Create Workflow
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {workflows.map((workflow) => (
+          <Card
+            key={workflow.id}
+            className={`p-6 cursor-pointer transition-all ${
+              selectedWorkflow?.id === workflow.id
+                ? "border-primary-500 bg-primary-50"
+                : "hover:border-primary-300"
+            }`}
+            onClick={() => setSelectedWorkflow(workflow)}
+          >
+            <div className="space-y-4">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="text-xl font-semibold">{workflow.name}</h3>
+                  <p className="text-sm text-gray-600">{workflow.description}</p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteWorkflow(workflow.id);
+                  }}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm text-gray-500">
+                  <span>{workflow.steps.length} steps</span>
+                  <span>
+                    {new Date(workflow.lastUpdated).toLocaleDateString()}
+                  </span>
+                </div>
+                <div className="flex space-x-2">
+                  {workflow.steps.map((step) => (
+                    <div
+                      key={step.id}
+                      className={`w-2 h-2 rounded-full ${
+                        step.status === "completed"
+                          ? "bg-green-500"
+                          : step.status === "in-progress"
+                          ? "bg-yellow-500"
+                          : "bg-gray-300"
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+
+      {selectedWorkflow && (
+        <Card className="p-6 space-y-6">
+          <div className="flex justify-between items-start">
+            <div>
+              <h3 className="text-2xl font-bold">{selectedWorkflow.name}</h3>
+              <p className="text-gray-600">{selectedWorkflow.description}</p>
+            </div>
+            <Button variant="outline">
+              <Settings className="w-4 h-4 mr-2" /> Workflow Settings
             </Button>
           </div>
 
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-1">
-                <Clock className="w-4 h-4 text-gray-500" />
-                <span>{sampleWorkflow.totalTime}</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <Star className="w-4 h-4 text-yellow-500" />
-                <span>{sampleWorkflow.skillLevel}</span>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <span>Automation Potential:</span>
-              <div className="w-20 h-2 bg-gray-200 rounded-full">
-                <div
-                  className="h-full bg-primary-500 rounded-full"
-                  style={{ width: `${sampleWorkflow.automationPotential}%` }}
-                />
-              </div>
-              <span>{sampleWorkflow.automationPotential}%</span>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            {sampleWorkflow.nodes.map((node, index) => (
-              <div key={node.tool.id} className="relative">
-                <Card
-                  className={`p-4 transition-all duration-300 ${
-                    activeNode === index
-                      ? "border-primary-500 bg-primary-50 shadow-lg scale-105"
-                      : "border-gray-200"
-                  }`}
-                >
-                  <div className="space-y-3">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h4 className="font-medium">{node.tool.name}</h4>
-                        <p className="text-sm text-gray-600">{node.tool.description}</p>
-                      </div>
-                      <span className="text-sm text-gray-500">{node.estimatedTime}</span>
+          <div className="space-y-6">
+            {selectedWorkflow.steps.map((step, index) => (
+              <div
+                key={step.id}
+                className="flex items-start space-x-4 p-4 bg-gray-50 rounded-lg"
+              >
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center">
+                  {index + 1}
+                </div>
+                <div className="flex-grow space-y-3">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h4 className="font-medium">{step.tool.name}</h4>
+                      <p className="text-sm text-gray-600">
+                        {step.tool.description}
+                      </p>
                     </div>
-
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <p className="font-medium text-gray-700">Inputs:</p>
-                        <ul className="list-disc list-inside text-gray-600">
-                          {node.inputs.map((input, i) => (
-                            <li key={i}>{input}</li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-700">Outputs:</p>
-                        <ul className="list-disc list-inside text-gray-600">
-                          {node.outputs.map((output, i) => (
-                            <li key={i}>{output}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Clock className="w-4 h-4 text-gray-400" />
                       <span className="text-sm text-gray-500">
-                        Complexity: {node.complexity}
+                        {step.estimatedTime}
                       </span>
-                      {index < sampleWorkflow.nodes.length - 1 && (
-                        <ArrowRight className="w-5 h-5 text-gray-400" />
-                      )}
                     </div>
                   </div>
-                </Card>
+
+                  <div className="space-y-2">
+                    <Textarea
+                      placeholder="Add notes about this step..."
+                      value={step.notes}
+                      onChange={(e) =>
+                        updateStepNotes(selectedWorkflow.id, step.id, e.target.value)
+                      }
+                      className="min-h-[80px]"
+                    />
+                    <div className="flex justify-between items-center">
+                      <div className="flex space-x-2">
+                        <Button
+                          variant={step.status === "pending" ? "default" : "outline"}
+                          size="sm"
+                          onClick={() =>
+                            updateStepStatus(selectedWorkflow.id, step.id, "pending")
+                          }
+                        >
+                          Pending
+                        </Button>
+                        <Button
+                          variant={
+                            step.status === "in-progress" ? "default" : "outline"
+                          }
+                          size="sm"
+                          onClick={() =>
+                            updateStepStatus(
+                              selectedWorkflow.id,
+                              step.id,
+                              "in-progress"
+                            )
+                          }
+                        >
+                          In Progress
+                        </Button>
+                        <Button
+                          variant={step.status === "completed" ? "default" : "outline"}
+                          size="sm"
+                          onClick={() =>
+                            updateStepStatus(selectedWorkflow.id, step.id, "completed")
+                          }
+                        >
+                          Completed
+                        </Button>
+                      </div>
+                      <Button variant="ghost" size="sm">
+                        <Save className="w-4 h-4 mr-2" /> Save Notes
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
-        </div>
-      </Card>
+
+          <div className="flex justify-between items-center pt-4 border-t">
+            <Button variant="outline" onClick={() => setSelectedWorkflow(null)}>
+              Close Workflow
+            </Button>
+            <Button>
+              <Plus className="w-4 h-4 mr-2" /> Add Step
+            </Button>
+          </div>
+        </Card>
+      )}
     </div>
   );
 } 
