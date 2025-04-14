@@ -14,10 +14,15 @@ export default defineConfig({
     outDir: 'dist',
     sourcemap: false,
     rollupOptions: {
+      external: ['@tanstack/react-query'],
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom', 'react-router-dom'],
+          tanstack: ['@tanstack/react-query'],
         },
+        globals: {
+          '@tanstack/react-query': 'ReactQuery'
+        }
       },
     },
   },
