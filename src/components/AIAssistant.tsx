@@ -4,6 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { tools } from "@/data/tools";
 import { Tool } from "@/types";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface WorkflowStep {
   tool: Tool;
@@ -32,6 +33,7 @@ export default function AIAssistant() {
   const [userInput, setUserInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [aiResponse, setAiResponse] = useState<AIResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
 
   // Rotate through example prompts
@@ -41,15 +43,62 @@ export default function AIAssistant() {
 
   const handleSubmit = async () => {
     setIsLoading(true);
+    setError(null);
     try {
-      // TODO: Replace with actual API call to OpenAI/Claude/Gemini
-      // Mock response for now
-      const relevantTools = tools
-        .filter(tool => 
-          tool.description.toLowerCase().includes(userInput.toLowerCase()) ||
-          tool.category.toLowerCase().includes(userInput.toLowerCase())
-        )
-        .slice(0, 3);
+      // Enhanced tool matching logic
+      const input = userInput.toLowerCase();
+      const keywords = input.split(" ").filter(word => word.length > 2);
+      
+      // Score each tool based on relevance
+      const scoredTools = tools.map(tool => {
+        let score = 0;
+        
+        // Check tool name
+        if (keywords.some(keyword => tool.name.toLowerCase().includes(keyword))) {
+          score += 3;
+        }
+        
+        // Check tool description
+        keywords.forEach(keyword => {
+          if (tool.description.toLowerCase().includes(keyword)) {
+            score += 2;
+          }
+        });
+        
+        // Check tool category
+        if (keywords.some(keyword => tool.category.toLowerCase().includes(keyword))) {
+          score += 2;
+        }
+        
+        // Check tool tags
+        tool.tags.forEach(tag => {
+          if (keywords.some(keyword => tag.toLowerCase().includes(keyword))) {
+            score += 1;
+          }
+        });
+        
+        // Check tool use cases
+        if (tool.useCases) {
+          tool.useCases.forEach(useCase => {
+            if (keywords.some(keyword => useCase.toLowerCase().includes(keyword))) {
+              score += 1;
+            }
+          });
+        }
+        
+        return { tool, score };
+      });
+      
+      // Get top 3 most relevant tools
+      const relevantTools = scoredTools
+        .filter(item => item.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 3)
+        .map(item => item.tool);
+
+      if (relevantTools.length === 0) {
+        throw new Error("No matching tools found for your request. Please try a different search.");
+      }
 
       const mockResponse: AIResponse = {
         tools: relevantTools,
@@ -70,6 +119,7 @@ export default function AIAssistant() {
       setAiResponse(mockResponse);
     } catch (error) {
       console.error("Error getting recommendations:", error);
+      setError(error instanceof Error ? error.message : "An unexpected error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -112,7 +162,13 @@ export default function AIAssistant() {
         </div>
       </div>
 
-      {aiResponse && (
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
+      {aiResponse && !error && (
         <div className="space-y-6">
           <Card className="p-6">
             <p className="text-gray-700">{aiResponse.explanation}</p>

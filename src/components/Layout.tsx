@@ -1,17 +1,15 @@
 import { ReactNode } from "react";
-import { useRouter } from "next/router";
-import Link from "next/link";
-import {
-  Home,
-  Search,
-  LayoutIcon,
-  Wrench,
-  ArrowLeftRight,
-  Play,
-  Beaker,
-  Upload,
-  Users,
-  Brain,
+import { Link, useLocation, useParams } from "react-router-dom";
+import { 
+  Home, 
+  Search, 
+  PlusCircle, 
+  Brain, 
+  Sparkles, 
+  Layout as LayoutIcon, 
+  PlayCircle,
+  Scale,
+  Zap
 } from "lucide-react";
 import { categories } from "@/data/categories";
 import Navbar from "./Navbar";
@@ -24,10 +22,18 @@ interface LayoutProps {
 const mainNavItems = [
   { href: "/", label: "Home", icon: Home },
   { href: "/discover", label: "Discover Tools", icon: Search },
+  { href: "/submit", label: "Add Tool", icon: PlusCircle },
+  { href: "/ai-assistant", label: "AI Assistant", icon: Brain },
+  { href: "/smart-recommendations", label: "Smart Recommendations", icon: Sparkles },
+  { href: "/tool-stacks", label: "Tool Stacks", icon: LayoutIcon },
+  { href: "/workflows", label: "Interactive Workflow", icon: PlayCircle },
+  { href: "/compare", label: "Compare Tools", icon: Scale },
+  { href: "/tool-of-day", label: "Tool of the Day", icon: Zap },
 ];
 
 export default function Layout({ children }: LayoutProps) {
-  const router = useRouter();
+  const location = useLocation();
+  const params = useParams();
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -40,11 +46,11 @@ export default function Layout({ children }: LayoutProps) {
             <div className="space-y-1">
               {mainNavItems.map((item) => {
                 const Icon = item.icon;
-                const isActive = router.pathname === item.href;
+                const isActive = location.pathname === item.href;
                 return (
                   <Link
                     key={item.href}
-                    href={item.href}
+                    to={item.href}
                     className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
                       isActive
                         ? "bg-primary-50 text-primary-600"
@@ -65,11 +71,11 @@ export default function Layout({ children }: LayoutProps) {
               </h3>
               <div className="space-y-1">
                 {categories.map((category) => {
-                  const isActive = router.query.id === category.id;
+                  const isActive = location.pathname === `/category/${category.id}`;
                   return (
                     <Link
                       key={category.id}
-                      href={`/category/${category.id}`}
+                      to={`/category/${category.id}`}
                       className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
                         isActive
                           ? "bg-primary-50 text-primary-600"

@@ -1,18 +1,19 @@
-import { useRouter } from 'next/router';
+import { useParams } from 'react-router-dom';
 import Layout from "@/components/Layout";
 import ToolGrid from "@/components/ToolGrid";
 import { tools } from "@/data/tools";
 import { categories } from "@/data/categories";
 
 export default function CategoryPage() {
-  const router = useRouter();
-  const { id } = router.query;
+  const { id } = useParams();
 
   // Find the category details
   const category = categories.find(cat => cat.id === id);
   
   // Filter tools by category
-  const categoryTools = tools.filter(tool => tool.categories?.includes(id as string));
+  const categoryTools = tools.filter(tool => 
+    tool.category === id || tool.categories?.includes(id as string)
+  );
 
   return (
     <Layout>
