@@ -1,1 +1,1 @@
-check it out at rad-malabi-3abaad.netlify.app
+check it out at https://rad-malabi-3abaad.netlify.app/
